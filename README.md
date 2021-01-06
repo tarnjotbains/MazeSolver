@@ -1,5 +1,5 @@
 # maze-solver 
-Implemented maze generation and pathfinding in Python using PyGame. 
+Implemented random maze generation and pathfinding in Python using PyGame. 
 
 ![](maze.gif)
 - Represented cells of a maze on a graph in class 'MazeNode'  
