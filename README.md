@@ -11,9 +11,10 @@ Implemented random maze generation and pathfinding in Python using PyGame.
  - [ ] Fix Cursor Bug 
  - [ ] Add DocString 
  - [ ] Restructure the modules?
- - [ ] Add Visuals to show Dijkstra's Algorithm
- - [ ] Add Visuals to show Maze Generation
- 
+ - [x] Add Visuals to show Dijkstra's Algorithm
+ - [x] Add Visuals to show Maze Generation
+ - [ ] Functionize parts of the PyGame loop. 
+  
 Extras  
  - [ ] Implement pathfinding with A* algorithm 
  - [ ] Implement Prim's maze generation algorithm 
