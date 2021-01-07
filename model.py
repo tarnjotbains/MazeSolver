@@ -25,9 +25,17 @@ class MazeNode:
         self.border_bottom = None
         self.border_list = []
 
-        #For Djikstras
+        # For Djikstras
         self.root = None 
         self.weight = -1
+
+        # For visualization purposes
+        self.drawn = False 
+        self.draw_type = ""
+        self.color = None
+        self.path_node = False 
+        self.path_type = None 
+        self.drawing_path = None 
     
     def generate_borders(self): 
         if self.data[0] != 0: 
@@ -71,10 +79,21 @@ class MazeNode:
     def draw_border(self, screen): 
         for line in self.border_list: 
             pygame.draw.line(screen, (255,0,0), line.start_pos, line.end_pos)
+            
 
-    def draw(self, screen, color): 
+    def draw(self, screen): 
         
-        pygame.draw.rect(screen,color, pygame.Rect(self.data[0]*40+15, self.data[1]*40 + 15, 10,10) ) 
+        if self.draw_type == 'maze_node': 
+            pygame.draw.rect(screen, self.color, pygame.Rect(self.data[0]*40 + 1, self.data[1]*40 + 1, 40,40))
+
+        if self.draw_type == 'path':
+            pygame.draw.line(screen, (255,255,0), (self.data[0]*40 +20, self.data[1]*40+20), (self.root.data[0]*40+20, self.root.data[1]*40+20))
+
+        if self.draw_type == 'search': 
+            pygame.draw.rect(screen, (153,0,76) , pygame.Rect(self.data[0]*40+15, self.data[1]*40 + 15, 10,10))
+
+
+
 
 
     def __lt__(self,other): 
