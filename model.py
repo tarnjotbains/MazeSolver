@@ -2,14 +2,124 @@ import pygame
 from pygame.locals import * 
 import random 
 
-class Line(): 
+class Line():
+    """
+    A class that represents a line. 
+    
+    Attributes
+    ----------
+    start_pos : Tuple
+        X and Y coordinates for where line begins.
+    end_pos : Tuple
+        X and Y coordinates of where line ends.
+        
+    """ 
     def __init__(self, start_pos, end_pos):
+        """
+        Initializes a line. 
+
+        Parameters
+        ----------
+        start_pos : Tuple
+            X and Y coordinates for where line begins.
+        end_pos : Tuple
+            X and Y coordinates of where line ends.
+
+        Returns
+        -------
+        None.
+
+        """
         self.start_pos = start_pos
         self.end_pos = end_pos
 
 
-class MazeNode: 
-    def __init__(self, data): 
+class MazeNode:
+    """
+    A class that represents a node on a graph called maze.  
+    
+    Attributes
+    ----------
+    data: Tuple
+        X and Y coordinates for where the MazeNode resides.  
+    
+    visited: bool
+        True if the tuple has been visited in graph navigation. 
+        
+    left_neighbor: MazeNode 
+        A pointer to the left neighbor, if it exists. 
+    
+    right_neighbor: MazeNode 
+        A pointer to the right neighbor, if it exists. 
+    
+    top_neighbor: MazeNode 
+        A pointer to the top neighbor, if it exists. 
+    
+    bottom_neighbor: MazeNode 
+        A pointer to the bottom neighbor, if it exists. 
+        
+    neighbor_list: list
+        A list of neighbors. 
+    
+    border_left: Line
+        A line representing the border between MazeNode and it's left neighbor. 
+    
+    border_right: Line
+        A line representing the border between MazeNode and it's right neighbor. 
+    
+    border_top: Line
+        A line representing the border between MazeNode and it's top neighbor. 
+    
+    border_bottom: Line
+        A line representing the border between MazeNode and it's bottom neighbor. 
+        
+    border_list: list
+        A list of borders. 
+        
+    root: MazeNode 
+        Represents the neighbor that was visited prior in graph navigation. 
+    
+    weight: int
+        Represents the weight of the path that was taken to MazeNode, 
+        -1 if it has not been visited yet.
+        
+    drawn: bool
+        True iff MazeNode is currently being drawn to a screen. 
+        
+    draw_type: str
+        A string representing the current state of the node, MazeNode if it's
+        not being traversed, path if it lies on a path, search if its currently
+        being traversed by dijkstra's. 
+    
+    color: Tuple
+        An RGB tuple representing the color of the node.
+
+    path_node: bool
+        True iff MazeNode resides on a path. 
+    
+    path_type: str
+        A string representing whether MazeNode lies on a optimal or non-optimal
+        path, exists iff MazeNode lies on a path. 
+    
+    drawing_path: bool
+        True iff MazeNode exists on a path and that path is currently being drawn
+        to the screen. 
+        
+    """
+    def __init__(self, data):
+        """
+        Initializes a maze node with position: data. 
+
+        Parameters
+        ----------
+        data : Tuple
+            An X and Y coordinate of where MazeNode resides on graph. 
+
+        Returns
+        -------
+        None.
+
+        """
         self.data = data
         self.visited = False
         
@@ -37,7 +147,15 @@ class MazeNode:
         self.path_type = None 
         self.drawing_path = None 
     
-    def generate_borders(self): 
+    def generate_borders(self):
+        """
+        Creates borders between MazeNode and all of it's neighbors. 
+
+        Returns
+        -------
+        None.
+
+        """
         if self.data[0] != 0: 
             start_pos = (self.data[0]*40, self.data[1]*40)
             end_pos = (self.data[0]*40, self.data[1]*40 + 40)
@@ -63,6 +181,19 @@ class MazeNode:
             self.border_list.append(self.border_bottom) 
     
     def remove_border(self, neighbor): 
+        """
+        Removes the border between MazeNode and the specified neighbor. 
+
+        Parameters
+        ----------
+        neighbor : MazeNode 
+            Neighbor with whom the border will be removed from. 
+
+        Returns
+        -------
+        None.
+
+        """
         if neighbor.data[0] == (self.data[0] + 1): 
             self.border_list.remove(self.border_right)
             self.border_right = None 
@@ -76,13 +207,38 @@ class MazeNode:
             self.border_list.remove(self.border_bottom) 
             self.border_bottom = None
 
-    def draw_border(self, screen): 
+    def draw_border(self, screen):
+        """
+        For every border in border_list, draws those borders to the screen.
+
+        Parameters
+        ----------
+        screen : pygame.display
+            The screen to which MazeNode will be drawn. 
+
+        Returns
+        -------
+        None.
+
+        """
         for line in self.border_list: 
             pygame.draw.line(screen, (255,0,0), line.start_pos, line.end_pos)
             
 
     def draw(self, screen): 
-        
+        """
+        Draws MazeNode to screen. 
+
+        Parameters
+        ----------
+        screen : pygame.display
+            The screen to which MazeNode will be drawn. 
+
+        Returns
+        -------
+        None.
+
+        """
         if self.draw_type == 'maze_node': 
             pygame.draw.rect(screen, self.color, pygame.Rect(self.data[0]*40 + 1, self.data[1]*40 + 1, 40,40))
 
@@ -92,11 +248,21 @@ class MazeNode:
         if self.draw_type == 'search': 
             pygame.draw.rect(screen, (153,0,76) , pygame.Rect(self.data[0]*40+15, self.data[1]*40 + 15, 10,10))
 
+    def __lt__(self,other):
+        """
+        Returns true if MazeNode's weight is less than "others" weight. 
 
+        Parameters
+        ----------
+        other : MazeNode
+            The other node to which comparison will be made. 
 
+        Returns
+        -------
+        bool
+            self explanatory. 
 
-
-    def __lt__(self,other): 
+        """
         return self.weight < other.weight
 
 

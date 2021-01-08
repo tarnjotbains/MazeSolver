@@ -21,7 +21,16 @@ seekerImg = pygame.image.load('seeker.png')
 itemImg = pygame.image.load('item.png')
 
 
-def generate_maze_nodes(): 
+def generate_maze_nodes():
+    """
+    Creates MazeNodes which lie on a 20x20 grid. 
+
+    Returns
+    -------
+    node_list : list
+        A list of created MazeNodes. 
+
+    """
     node_list = []
     for j in range(0,20): 
         for i in range(0,20): 
@@ -30,7 +39,20 @@ def generate_maze_nodes():
             node_list.append(node)
     return node_list 
 
-def generate_neighbors(node_list): 
+def generate_neighbors(node_list):
+    """
+    Initializes the neighbors of MazeNodes in a list. 
+
+    Parameters
+    ----------
+    node_list : list
+        A list of MazeNodes. 
+
+    Returns
+    -------
+    None.
+
+    """
     for i in range(0,len(node_list)): 
         node = node_list[i]
         if node.data[0] != 0: 
@@ -46,7 +68,26 @@ def generate_neighbors(node_list):
             node.bottom_neighbor = node_list[i + 20]
             node.neighbor_list.append(node.bottom_neighbor)
 
-def carve(node, node_list, screen): 
+def carve(node, node_list, screen):
+    """
+    Creates a maze. 
+    Uses depth-first-search to navigate a graph of MazeNodes and removes borders
+    as it traverses. 
+
+    Parameters
+    ----------
+    node : MazeNode
+        Node that is currently being traversed. 
+    node_list : list
+        A list of MazeNodes 
+    screen : pygame.display
+        The screen on which node resides. 
+
+    Returns
+    -------
+    None.
+
+    """
     node.visited = True 
     random.shuffle(node.neighbor_list) 
     
@@ -79,7 +120,21 @@ def carve(node, node_list, screen):
             carve(neighbor, node_list, screen) 
     return 
 
-def update_neighbors(node_list): 
+def update_neighbors(node_list):
+    """
+    Based on the borders of nodes in node_list, updates the neighbors so that
+    if a node has a border between another node, they are no longer neighbors. 
+
+    Parameters
+    ----------
+    node_list : list
+        A list of MazeNodes 
+
+    Returns
+    -------
+    None.
+
+    """
     for node in node_list:
         if node.border_left and node.left_neighbor:
             node.neighbor_list.remove(node.left_neighbor) 
@@ -95,12 +150,50 @@ def update_neighbors(node_list):
             node.bottom_neighbor = None                 
 
 def run_dijkstras(seeker_node, item_node):
+    """
+    Creates a priority queue and a order in which to remove failed dijkstra's
+    paths and calls helper 'search'.
+
+    Parameters
+    ----------
+    seeker_node : MazeNode
+        The node we wish to start Dijkstra's algorithm from. 
+    item_node : MazeNode
+        The Node we are searching for. 
+
+    Returns
+    -------
+    delete_order : list
+        A list of all nodes searched in dijkstra's path sorted by traversal. 
+
+    """
     q = PriorityQueue() 
     delete_order = [] 
     search(seeker_node,q, item_node, delete_order)
     return delete_order 
 
-def search(node, queue, node_goal, delete_order): 
+def search(node, queue, node_goal, delete_order):
+    """
+    Runs Dijkstra's algorithm until node is node_goal, fills delete_order as it
+    traverses. 
+
+    Parameters
+    ----------
+    node : MazeNode
+        The node that is currently being viewed in Dijksta's algorithm. 
+    queue : queue
+        A priority queue which contains nodes by weight. 
+    node_goal : MazeNode 
+        The node that search is searching for. 
+    delete_order : list
+        A list of all nodes searched in dijkstra's path sorted by traversal. 
+
+    Returns
+    -------
+    MazeNode, None 
+        DESCRIPTION.
+
+    """
     if node == node_goal: 
         return node 
     if node_goal.visited == True: 
@@ -130,26 +223,105 @@ def search(node, queue, node_goal, delete_order):
     node_to_visit = queue.get()[1] 
     search(node_to_visit, queue, node_goal, delete_order) 
 
-def reset_visited(node_list): 
+def reset_visited(node_list):
+    """
+    Resets the visited status of all nodes in node_list to False. 
+
+    Parameters
+    ----------
+    node_list : list
+        A list of MazeNodes. 
+
+    Returns
+    -------
+    None.
+
+    """
     for node in node_list: 
         node.visited = False 
 
-def draw_borders(node_list, screen): 
+def draw_borders(node_list, screen):
+    """
+    Draws the border of all nodes in node_list to the screen. 
+
+    Parameters
+    ----------
+    node_list : list
+        A list of MazeNodes. 
+    screen : pygame.display
+        The screen on which nodes in node_list reside. 
+
+    Returns
+    -------
+    None.
+
+    """
     for node in node_list:
         for line in node.border_list: 
             pygame.draw.line(screen, (255,0,0), line.start_pos, line.end_pos) 
 
 def draw_prompt(prompt):
+    """
+    Draws a prompt to screen. 
+
+    Parameters
+    ----------
+    prompt : str
+        The prompt to display. 
+
+    Returns
+    -------
+    None.
+
+    """
     font = pygame.font.Font('font.ttf', 32) 
     draw_seeker = font.render(prompt, True, (255,255,255)) 
     screen.blit(draw_seeker, (160,200))
 
-def draw_nodes(node_list, screen): 
+def draw_nodes(node_list, screen):
+    """
+    Draws all nodes in node_list to screen. 
+
+    Parameters
+    ----------
+    node_list : list
+        A list of MazeNodes. 
+    screen : pygame.display
+        The screen to which nodes will be drawn to. 
+
+    Returns
+    -------
+    None.
+
+    """
     for node in node_list: 
         if node.drawn:
             node.draw(screen)
 
 def remove_dijkstras_path(delete_order, screen, seekerImg, seekerX, seekerY, node_list): 
+    """
+    Removes dijkstra's path from screen.
+
+    Parameters
+    ----------
+    delete_order : list
+        The order in which to remove nodes. 
+    screen : pygame.display
+        The display from which nodes will be removed. 
+    seekerImg : pygame.image
+        The image containing the seeker. 
+    seekerX : int
+        X position of seeker. 
+    seekerY : int
+        Y position of seeker. 
+    node_list : list
+        A list of MazeNodes. 
+
+    Returns
+    -------
+    None.
+
+    """    
     for node in delete_order: 
         if not node.path_node:
             node.draw_type = "maze_node"
@@ -158,7 +330,24 @@ def remove_dijkstras_path(delete_order, screen, seekerImg, seekerX, seekerY, nod
             screen.blit(seekerImg, (seekerX, seekerY))
             pygame.display.update() 
 
-def draw_path(item_node, seeker_node, screen): 
+def draw_path(item_node, seeker_node, screen):
+    """
+    Draws the optimal path from item_node to seeker_node. 
+
+    Parameters
+    ----------
+    item_node : MazeNode
+        The ending node in Dijkstra's optimal path. 
+    seeker_node : MazeNode
+        The ending node in Dijkstra's optimal path. 
+    screen : pygame.display
+        The screen on which path will be drawn. 
+
+    Returns
+    -------
+    None.
+
+    """
     current_node = item_node
     while current_node != seeker_node: 
         current_node.draw_type = "path"
@@ -170,7 +359,17 @@ def draw_path(item_node, seeker_node, screen):
         pygame.display.update()
         current_node = current_node.root 
 
-def run_maze(): 
+def run_maze():
+    """
+    The Game loop.
+    See comments below for a step by step description of what this function
+    does. 
+
+    Returns
+    -------
+    None.
+
+    """
     global screen
     node_list = generate_maze_nodes() 
     generate_neighbors(node_list)
@@ -191,7 +390,7 @@ def run_maze():
         # Draw all nodes that have a drawn value of true. 
         draw_nodes(node_list, screen)   
 
-        # Draw borders around cells 
+        # Draw borders around nodes
         draw_borders(node_list, screen)
                        
         # Create the maze. 
