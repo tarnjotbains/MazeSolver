@@ -18,6 +18,7 @@ Implemented random maze generation and pathfinding in Python using PyGame.
 Extras  
  - [ ] Implement pathfinding with A* algorithm 
  - [ ] Implement Prim's maze generation algorithm 
+ - [ ] Implement User-Defined Maze Generation 
 
 
 
