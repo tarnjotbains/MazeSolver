@@ -3,6 +3,7 @@ from pygame.locals import *
 import random 
 from queue import PriorityQueue
 from model import MazeNode, Line 
+import time
 
 #initialize pygame
 pygame.init() 
@@ -45,8 +46,6 @@ def generate_neighbors(node_list):
             node.bottom_neighbor = node_list[i + 20]
             node.neighbor_list.append(node.bottom_neighbor)
 
-import time
-
 def carve(node, node_list, screen): 
     node.visited = True 
     random.shuffle(node.neighbor_list) 
@@ -68,21 +67,16 @@ def carve(node, node_list, screen):
     node.draw(screen) 
     pygame.display.update() 
 
-
     for neighbor in node.neighbor_list: 
         if neighbor.visited == False: 
-            
             
             # Apply border visuals        
             node.remove_border(neighbor) 
             neighbor.remove_border(node)  
             pygame.display.flip() 
 
-
             # Recurse
             carve(neighbor, node_list, screen) 
-
-    
     return 
 
 def update_neighbors(node_list): 
@@ -98,12 +92,15 @@ def update_neighbors(node_list):
             node.top_neighbor = None 
         if node.border_bottom and node.bottom_neighbor: 
             node.neighbor_list.remove(node.bottom_neighbor) 
-            node.bottom_neighbor = None 
-                        
+            node.bottom_neighbor = None                 
+
+def run_dijkstras(seeker_node, item_node):
+    q = PriorityQueue() 
+    delete_order = [] 
+    search(seeker_node,q, item_node, delete_order)
+    return delete_order 
 
 def search(node, queue, node_goal, delete_order): 
-
-
     if node == node_goal: 
         return node 
     if node_goal.visited == True: 
@@ -113,14 +110,12 @@ def search(node, queue, node_goal, delete_order):
 
     node.visited = True 
     for neighbor in node.neighbor_list:
-
         delete_order.append(neighbor) 
         neighbor.draw_type = "search"
         neighbor.draw(screen)
         pygame.display.update()
         time.sleep(0.01) 
         
-
         if not neighbor.visited: 
             if neighbor.weight != -1: 
                 if neighbor.weight > node.weight + 1:
@@ -144,8 +139,6 @@ def draw_borders(node_list, screen):
         for line in node.border_list: 
             pygame.draw.line(screen, (255,0,0), line.start_pos, line.end_pos) 
 
-
-
 def draw_prompt(prompt):
     font = pygame.font.Font('font.ttf', 32) 
     draw_seeker = font.render(prompt, True, (255,255,255)) 
@@ -165,14 +158,20 @@ def remove_dijkstras_path(delete_order, screen, seekerImg, seekerX, seekerY, nod
             screen.blit(seekerImg, (seekerX, seekerY))
             pygame.display.update() 
 
-
-
-
-
+def draw_path(item_node, seeker_node, screen): 
+    current_node = item_node
+    while current_node != seeker_node: 
+        current_node.draw_type = "path"
+        current_node.path_node = True 
+        current_node.drawing_path = True 
+        time.sleep(0.02) 
+        current_node.draw(screen) 
+        current_node.drawn = True
+        pygame.display.update()
+        current_node = current_node.root 
 
 def run_maze(): 
     global screen
-
     node_list = generate_maze_nodes() 
     generate_neighbors(node_list)
 
@@ -194,11 +193,11 @@ def run_maze():
 
         # Draw borders around cells 
         draw_borders(node_list, screen)
-
                        
         # Create the maze. 
-        if maze_carved == False: 
-            carve(node_list[45], node_list, screen)  
+        if maze_carved == False:
+            start_index= random.randint(0,399)
+            carve(node_list[start_index], node_list, screen)  
             maze_carved = True 
             pygame.display.update()
             maze_carved = True  
@@ -208,7 +207,6 @@ def run_maze():
 
         # Handle Events 
         for event in pygame.event.get(): 
-
             # If user closes the program. 
             if event.type == QUIT: 
                 exit()
@@ -243,7 +241,6 @@ def run_maze():
             mx , my = mx//40 , my//40  
             screen.blit(seekerImg, (mx*40+5, my*40+5))
             draw_prompt("use mouse to place seeker")  
-            
 
         # Player prompt to place item. 
         if seeker_in_position and not item_in_position:
@@ -251,7 +248,6 @@ def run_maze():
             mx , my = mx//40 , my//40  
             screen.blit(itemImg, (mx*40+10, my*40+10))
             draw_prompt("use mouse to place the item") 
-
 
         # Draw seeker and item on screen.  
         if seeker_in_position:
@@ -261,39 +257,17 @@ def run_maze():
 
         # Run Djikstras 
         if seeker_in_position and item_in_position:
-            q = PriorityQueue() 
-            delete_order = [] 
-            search(seeker_node,q, item_node, delete_order) 
+            delete_order = run_dijkstras(seeker_node, item_node) 
             path_generated = True 
         
         # Draw path from seeker to item (frame by frame). 
         if path_generated and not path_drawn:
-            current_node = item_node
-            while current_node != seeker_node: 
-                current_node.draw_type = "path"
-                current_node.path_node = True 
-                current_node.drawing_path = True 
-                time.sleep(0.02) 
-                current_node.draw(screen) 
-                current_node.drawn = True
-                pygame.display.update()
-                current_node = current_node.root 
-
-                
+            draw_path(item_node, seeker_node, screen) 
             remove_dijkstras_path(delete_order, screen, seekerImg, seekerX, seekerY, node_list) 
             path_drawn = True 
-        
 
-        
-
-
-
-
-        
         # Update the view. 
         pygame.display.update() 
-
-
 
 if __name__ == "__main__":
     run_maze() 
